@@ -4,8 +4,9 @@
 
 These Terraform resource definitions can be used to:
 
-- deploy a RKE based Rancher Control Plane K8s cluster
-- add a custom K8s cluster to an existing Rancher Control Plane
+- Deploy a RKE based Rancher Control Plane K8s cluster
+- Add a custom K8s cluster to an existing Rancher Control Plane
+- Install some infrastructure related Apps like (Nginx ingress controller, Cert-Manager, etc.)
 
 ## Prerequisites
 
