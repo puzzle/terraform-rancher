@@ -1,0 +1,40 @@
+###################################################################
+# RKE Rancher Control Plane Cluster Configuration
+###################################################################
+
+# Enable or disable the creation/handling of a RKE K8s cluster
+enable_rke_k8s_cluster = false
+
+# RKE nodes to install a HA Rancher control plane on
+rke_nodes   = [
+  {
+      name  = "rke-node-0",
+      ip    = "172.20.20.X",
+      roles = "controlplane,etcd,worker"
+  }
+]
+
+###################################################################
+# Rancher Custom Cluster Configuration
+###################################################################
+
+# Enable or disable the creation/handling of a custom K8s cluster
+enable_custom_k8s_cluster = false
+
+# Rancher API URL (with protocol)
+rancher2_api_url = "https://rancher.example.com"
+
+# Rancher API access key (ensure to create one with "no scope" limitation)
+rancher2_access_key = "token-abcdef"
+
+# Rancher API secret key (ensure to create one with "no scope" limitation)
+rancher2_secret_key = "80123uhrbgiu4zo......"
+
+# Custom K8s cluster nodes
+custom_k8s_nodes   = [
+  {
+    name  = "k8s-node-0",
+    ip    = "172.20.20.Y",
+    roles = "controlplane,etcd,worker"
+  }
+]

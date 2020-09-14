@@ -1,0 +1,27 @@
+---
+controller:
+  dnsPolicy: ClusterFirstWithHostNet
+  hostNetwork: true
+  kind: "DaemonSet"
+  ingressClass: "nginx"
+  extraArgs:
+    enable-ssl-passthrough: null
+    default-ssl-certificate: "cert-manager/default-wildcard"
+
+  service:
+    enabled: true
+    type: "ClusterIP"
+
+  admissionWebhooks:
+      enabled: false
+
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+
+  podSecurityPolicy:
+    enabled: true
+
+  serviceAccount:
+    create: true
