@@ -12,7 +12,7 @@ These Terraform resource definitions can be used to:
 ### Installation- / Jump-Host
 1. Install Terraform on your local workstation (version >= 0.13): https://www.terraform.io/downloads.html
 
-2. Copy the template terraform "tfvars" file (`terraform.tfvars.tmpl`) to `terraform.tfvars` and adjust the values according to your environment. All these values need to be overridden! Further configuration values can be seen inside `variables.tf` and then also be overridden inside `terraform.tfvars`.
+2. Copy the template terraform "tfvars" file (`terraform.tfvars.tmpl`) to `terraform.tfvars` and adjust the values according to your environment. Further configuration values can be seen inside `variables.tf` and then also be overridden inside `terraform.tfvars`.
 ```bash
 cp terraform.tfvars.tmpl terraform.tfvars
 ```
