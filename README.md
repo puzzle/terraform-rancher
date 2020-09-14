@@ -22,10 +22,6 @@ cp terraform.tfvars.tmpl terraform.tfvars
 terraform init
 ```
 
-### Cluster Nodes
-All RKE Rancher Control Plane and custom K8s cluster nodes must have Docker preinstalled!
-It's also required that the RKE service user is added to the `docker` group on all nodes!
-
 ## Getting Started
 1. Test the Terraform changes by running `terraform plan`
 ```bash
