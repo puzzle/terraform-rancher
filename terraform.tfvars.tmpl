@@ -6,13 +6,12 @@
 enable_rke_k8s_cluster = true
 
 # RKE nodes to install a HA Rancher control plane on
-rke_nodes   = [
-  {
-      name  = "rke-node-0",
+rke_nodes = {
+  "rke-node-0" = {
       ip    = "172.20.20.X",
-      roles = "controlplane,etcd,worker"
+      roles = ["controlplane","etcd","worker"]
   }
-]
+}
 
 ###################################################################
 # Rancher Custom Cluster Configuration
@@ -31,10 +30,9 @@ rancher2_access_key = "abc"
 rancher2_secret_key = "123"
 
 # Custom K8s cluster nodes
-custom_k8s_nodes   = [
-  {
-    name  = "k8s-node-0",
+custom_k8s_nodes = {
+  "k8s-node-0" = {
     ip    = "172.20.20.Y",
-    roles = "controlplane,etcd,worker"
+    roles = ["controlplane","etcd","worker"]
   }
-]
+}

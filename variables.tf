@@ -1,4 +1,18 @@
 ###################################################################
+# General Configuration
+###################################################################
+
+variable "remote_access_service_user" {
+  description   = "User which will be used to access the remote nodes"
+  default       = "vagrant"
+}
+
+variable "remote_access_service_user_priv_key" {
+  description   = "Passwordless private key for a passwordless login of the remote node service user."
+  default       = "~/.ssh/id_rsa"
+}
+
+###################################################################
 # RKE Rancher Control Plane Cluster Configuration
 ###################################################################
 
@@ -8,15 +22,11 @@ variable "enable_rke_k8s_cluster" {
   default       = true
 }
 
-# Enable or disable the creation/handling of a RKE K8s cluster
-enable_rke_k8s_cluster = false
-
 variable "rke_nodes"  {
   description   = "RKE cluster nodes"
-  type          = list(object({
-    name  = string
+  type          = map(object({
     ip    = string
-    roles = string
+    roles = list(string)
   }))
 }
 
@@ -32,10 +42,9 @@ variable "enable_custom_k8s_cluster" {
 
 variable "custom_k8s_nodes"  {
   description   = "Custom K8s cluster nodes"
-  type          = list(object({
-    name  = string
+  type          = map(object({
     ip    = string
-    roles = string
+    roles = list(string)
   }))
 }
 

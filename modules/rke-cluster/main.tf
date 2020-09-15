@@ -7,3 +7,7 @@ resource "local_file" "kube_cluster_yaml" {
   filename = "${path.root}/kube_config_cluster.yml"
   content  = rke_cluster.rancher-cp.kube_config_yaml
 }
+
+output "kubeconfig_rke_cluster" {
+  value = rke_cluster.rancher-cp.kube_config_yaml
+}

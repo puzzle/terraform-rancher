@@ -1,9 +1,8 @@
 variable "nodes"  {
   description   = "Nodes to install Docker on."
-  type          = list(object({
-    name  = string
+  type          = map(object({
     ip    = string
-    roles = string
+    roles = list(string)
   }))
 }
 
@@ -12,12 +11,12 @@ variable "docker_version" {
   default       = "19.03.9"
 }
 
-variable "docker_service_user" {
-  description   = "User which will to be added to the docker group."
+variable "remote_access_service_user" {
+  description   = "User which will be used to access the remote nodes. Will also be added to the docker group."
   default       = "vagrant"
 }
 
-variable "docker_service_user_priv_key" {
-  description   = "Passwordless private key for a passwordless login of the service user."
+variable "remote_access_service_user_priv_key" {
+  description   = "Passwordless private key for a passwordless login of the remote node service user."
   default       = "~/.ssh/id_rsa"
 }
