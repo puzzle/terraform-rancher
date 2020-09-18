@@ -32,7 +32,7 @@ module "docker-rke-nodes" {
 # Wait for the Docker services to start
 resource "null_resource" "wait_for_rke_dockers" {}
 
-resource "time_sleep" "wait_30_seconds_for_rke_dockers" {
+resource "time_sleep" "wait_15_seconds_for_rke_dockers" {
   depends_on = [null_resource.wait_for_rke_dockers]
   count   = var.enable_rke_k8s_cluster == true ? 1 : 0
   destroy_duration = "15s"
@@ -78,7 +78,7 @@ module "docker-k8s-nodes" {
 # Wait for the Docker services to start
 resource "null_resource" "wait_for_custom_dockers" {}
 
-resource "time_sleep" "wait_30_seconds_for_custom_dockers" {
+resource "time_sleep" "wait_15_seconds_for_custom_dockers" {
   depends_on = [null_resource.wait_for_custom_dockers]
   count   = var.enable_custom_k8s_cluster == true ? 1 : 0
   destroy_duration = "15s"

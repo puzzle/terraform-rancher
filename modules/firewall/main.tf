@@ -14,6 +14,14 @@ resource "null_resource" "firewalld_installation" {
   }
 }
 
+# Wait for the Firewall service to start
+resource "null_resource" "wait_for_firewalld" {}
+
+resource "time_sleep" "wait_10_seconds_for_firewalld" {
+  depends_on = [null_resource.firewalld_installation]
+  destroy_duration = "10s"
+}
+
 # TODO: Only add nodes with specific role to each *_nodes list.
 locals {
   etcd_nodes = var.nodes
