@@ -1,7 +1,7 @@
 resource "null_resource" "docker_installation" {
   for_each = var.nodes
   connection {
-    host        = each.value.ip
+    host        = each.value.address
     user        = var.remote_access_service_user
     private_key = file(var.remote_access_service_user_priv_key)
   }
@@ -19,7 +19,7 @@ resource "null_resource" "docker_installation" {
 resource "null_resource" "docker_cleanup_cronjobs" {
   for_each = var.nodes
   connection {
-    host        = each.value.ip
+    host        = each.value.address
     user        = var.remote_access_service_user
     private_key = file(var.remote_access_service_user_priv_key)
   }

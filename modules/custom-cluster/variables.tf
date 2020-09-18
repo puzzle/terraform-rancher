@@ -15,3 +15,9 @@ variable "rancher2_secret_key" {
   type          = string
   default       = "123"
 }
+
+variable "custom_kubernetes_version" {
+  description   = "Kubernetes version of the custom cluster"
+  type          = string
+  default       = "v1.18.8-rancher1-1"
+}

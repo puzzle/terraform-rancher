@@ -22,37 +22,43 @@ module "docker-rke-nodes" {
   source  = "./modules/docker"
   count   = var.enable_rke_k8s_cluster == true ? 1 : 0
 
-  nodes                                = var.rke_nodes
+  nodes                                = var.rke_cluster_nodes
   remote_access_service_user           = var.remote_access_service_user
   remote_access_service_user_priv_key  = var.remote_access_service_user_priv_key
 }
-
-# TODO: IP Forwarding & Cleanup Cronjobs
 
 # Wait for the Docker services to start
 resource "null_resource" "wait_for_rke_dockers" {}
 
 resource "time_sleep" "wait_15_seconds_for_rke_dockers" {
-  depends_on = [null_resource.wait_for_rke_dockers]
-  count   = var.enable_rke_k8s_cluster == true ? 1 : 0
-  destroy_duration = "15s"
+  depends_on        = [null_resource.wait_for_rke_dockers]
+  count             = var.enable_rke_k8s_cluster == true ? 1 : 0
+  destroy_duration  = "15s"
 }
 
 module "rke-node-firewall" {
-  source      = "./modules/firewall"
-  count       = var.enable_rke_k8s_cluster == true ? 1 : 0
+  source  = "./modules/firewall"
+  count   = var.enable_rke_k8s_cluster == true ? 1 : 0
 
-  nodes       = var.rke_nodes
+  nodes   = var.rke_cluster_nodes
 }
 
 # Deploy RKE Rancher Control Plane Cluster
-# TODO: Generate cluster.yml configuration via rke provider agruments
 module "rke-cluster" {
   source      = "./modules/rke-cluster"
   count       = var.enable_rke_k8s_cluster == true ? 1 : 0
   providers   = {
     rke = rke.rke_config
   }
+
+  rke_cluster_node_config_is_from_cluster_yml = var.rke_cluster_node_config_is_from_cluster_yml
+  rke_cluster_yml_file                        = var.rke_cluster_yml_file
+  rke_cluster_nodes                           = var.rke_cluster_nodes
+  rke_cluster_node_service_user               = var.rke_cluster_node_service_user
+  rke_cluster_kubernetes_version              = var.rke_cluster_kubernetes_version
+  rke_cluster_ingress_provider                = var.rke_cluster_ingress_provider
+  rke_cluster_network_plugin                  = var.rke_cluster_network_plugin
+
 }
 
 # TODO: Install Rancher Helm Chart & dependencies
@@ -68,12 +74,10 @@ module "docker-k8s-nodes" {
   source  = "./modules/docker"
   count   = var.enable_custom_k8s_cluster == true ? 1 : 0
 
-  nodes                               = var.custom_k8s_nodes
+  nodes                               = var.custom_cluster_nodes
   remote_access_service_user          = var.remote_access_service_user
   remote_access_service_user_priv_key = var.remote_access_service_user_priv_key
 }
-
-# TODO: IP Forwarding & Cleanup Cronjobs
 
 # Wait for the Docker services to start
 resource "null_resource" "wait_for_custom_dockers" {}
@@ -88,7 +92,7 @@ module "custom-node-firewall" {
   source      = "./modules/firewall"
   count       = var.enable_custom_k8s_cluster == true ? 1 : 0
 
-  nodes       = var.custom_k8s_nodes
+  nodes       = var.custom_cluster_nodes
 }
 
 # TODO: Create the Custom K8s Cluster

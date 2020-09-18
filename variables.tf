@@ -4,11 +4,13 @@
 
 variable "remote_access_service_user" {
   description   = "User which will be used to access the remote nodes"
+  type          = string
   default       = "vagrant"
 }
 
 variable "remote_access_service_user_priv_key" {
   description   = "Passwordless private key for a passwordless login of the remote node service user."
+  type          = string
   default       = "~/.ssh/id_rsa"
 }
 
@@ -22,12 +24,49 @@ variable "enable_rke_k8s_cluster" {
   default       = true
 }
 
-variable "rke_nodes"  {
-  description   = "RKE cluster nodes"
+variable "rke_cluster_node_config_is_from_cluster_yml" {
+  description   = "Choose if rke node config should be taken from rke_cluster_yml_file or rke_cluster_nodes. Default is rke_cluster_yml_file."
+  type          = bool
+  default       = true
+}
+
+variable "rke_cluster_yml_file" {
+  description   = "RKE cluster.yml configuration file name. rke_cluster_yml_file OR rke_cluster_nodes is required."
+  type          = string
+  default       = "cluster.yml"
+}
+
+variable "rke_cluster_nodes"  {
+  description   = "RKE cluster nodes. rke_cluster_yml_file OR rke_cluster_nodes is required."
   type          = map(object({
-    ip    = string
-    roles = list(string)
+    address = string
+    role    = list(string)
   }))
+  default = {}
+}
+
+variable "rke_cluster_node_service_user" {
+  description   = "RKE cluster node service user. Used to the RKE SSH session to the node."
+  type          = string
+  default       = "vagrant"
+}
+
+variable "rke_cluster_kubernetes_version" {
+  description   = "Kubernetes version of the RKE cluster"
+  type          = string
+  default       = "v1.18.6-rancher1-2"
+}
+
+variable "rke_cluster_ingress_provider" {
+  description   = "RKE cluster ingress provider"
+  type          = string
+  default       = "nginx"
+}
+
+variable "rke_cluster_network_plugin" {
+  description   = "RKE cluster cni plugin"
+  type          = string
+  default       = "canal"
 }
 
 ###################################################################
@@ -40,12 +79,13 @@ variable "enable_custom_k8s_cluster" {
   default       = false
 }
 
-variable "custom_k8s_nodes"  {
+variable "custom_cluster_nodes"  {
   description   = "Custom K8s cluster nodes"
   type          = map(object({
-    ip    = string
-    roles = list(string)
+    address = string
+    role    = list(string)
   }))
+  default = {}
 }
 
 variable "rancher2_api_url" {
@@ -64,4 +104,10 @@ variable "rancher2_secret_key" {
   description   = "Rancher API secret key (ensure to create one with 'no scope' limitation)"
   type          = string
   default       = "123"
+}
+
+variable "custom_kubernetes_version" {
+  description   = "Kubernetes version of the custom cluster"
+  type          = string
+  default       = "v1.18.8-rancher1-1"
 }

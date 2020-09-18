@@ -5,13 +5,31 @@
 # Enable or disable the creation/handling of a RKE K8s cluster
 enable_rke_k8s_cluster = true
 
-# RKE nodes to install a HA Rancher control plane on
-rke_nodes = {
+# Choose if rke node config should be taken from rke_cluster_yml_file or rke_cluster_nodes. Default is rke_cluster_yml_file.
+rke_cluster_node_config_is_from_cluster_yml = true
+
+# RKE cluster.yml configuration file name. rke_cluster_yml_file OR rke_cluster_nodes is required.
+rke_cluster_yml_file = "cluster.yml"
+
+# RKE cluster nodes. rke_cluster_yml_file OR rke_cluster_nodes is required.
+rke_cluster_nodes = {
   "rke-node-0" = {
-      ip    = "172.20.20.X",
-      roles = ["controlplane","etcd","worker"]
+      address = "172.20.20.X",
+      role    = ["controlplane","etcd","worker"]
   }
 }
+
+# RKE cluster node service user. Used to the RKE SSH session to the node.
+rke_cluster_node_service_user = "vagrant"
+
+# Kubernetes version of the RKE cluster
+rke_cluster_kubernetes_version = "v1.18.8-rancher1-1"
+
+# RKE cluster ingress provider
+rke_cluster_ingress_provider = "nginx"
+
+# RKE cluster cni plugin
+rke_cluster_network_plugin = "canal"
 
 ###################################################################
 # Rancher Custom Cluster Configuration
@@ -29,10 +47,13 @@ rancher2_access_key = "abc"
 # Rancher API secret key (ensure to create one with "no scope" limitation)
 rancher2_secret_key = "123"
 
+# Kubernetes version of the custom cluster
+custom_kubernetes_version = "v1.18.8-rancher1-1"
+
 # Custom K8s cluster nodes
-custom_k8s_nodes = {
+custom_cluster_nodes = {
   "k8s-node-0" = {
-    ip    = "172.20.20.Y",
-    roles = ["controlplane","etcd","worker"]
+    address = "172.20.20.Y",
+    role    = ["controlplane","etcd","worker"]
   }
 }

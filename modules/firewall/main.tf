@@ -1,7 +1,7 @@
 resource "null_resource" "firewalld_installation" {
   for_each = var.nodes
   connection {
-    host        = each.value.ip
+    host        = each.value.address
     user        = var.remote_access_service_user
     private_key = file(var.remote_access_service_user_priv_key)
   }
@@ -33,7 +33,7 @@ locals {
 resource "null_resource" "firewalld_etcd_node_rules" {
   for_each = local.control_nodes
   connection {
-    host        = each.value.ip
+    host        = each.value.address
     user        = var.remote_access_service_user
     private_key = file(var.remote_access_service_user_priv_key)
   }
@@ -53,7 +53,7 @@ resource "null_resource" "firewalld_etcd_node_rules" {
 resource "null_resource" "firewalld_control_node_rules" {
   for_each = local.worker_nodes
   connection {
-    host        = each.value.ip
+    host        = each.value.address
     user        = var.remote_access_service_user
     private_key = file(var.remote_access_service_user_priv_key)
   }
@@ -77,7 +77,7 @@ resource "null_resource" "firewalld_control_node_rules" {
 resource "null_resource" "firewalld_worker_node_rules" {
   for_each = local.etcd_nodes
   connection {
-    host        = each.value.ip
+    host        = each.value.address
     user        = var.remote_access_service_user
     private_key = file(var.remote_access_service_user_priv_key)
   }
@@ -97,6 +97,7 @@ resource "null_resource" "firewalld_worker_node_rules" {
   }
 }
 
+# TODO: Fix Firewall Reload
 resource "null_resource" "firewalld_reload" {
   for_each = var.nodes
   triggers = {
@@ -105,7 +106,7 @@ resource "null_resource" "firewalld_reload" {
     worker_nodes = null_resource.firewalld_etcd_node_rules[each.key].id
   }
   connection {
-    host        = each.value.ip
+    host        = each.value.address
     user        = var.remote_access_service_user
     private_key = file(var.remote_access_service_user_priv_key)
   }
