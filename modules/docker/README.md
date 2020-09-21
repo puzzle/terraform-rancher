@@ -8,12 +8,12 @@ module "docker-rke-nodes" {
 
   nodes   = {
     "rancher-node-0" = {
-      ip    = "172.20.20.10",
-      roles = ["controlplane","etcd","worker"]
+      address = "172.20.20.10",
+      role    = ["controlplane","etcd","worker"]
     },
     "rancher-node-1" = {
-      ip    = "172.20.20.11",
-      roles = ["worker"]
+      address = "172.20.20.11",
+      role    = ["worker"]
     }
   }
 }

@@ -17,8 +17,16 @@ provider "rancher2" {
 # RKE K8s Cluster
 ##################################################
 
+# Handle Rancher & K8s related firewall configuration
+module "rke_node_firewall" {
+  source  = "./modules/firewall"
+  count   = var.enable_rke_k8s_cluster == true ? 1 : 0
+
+  nodes   = var.rke_cluster_nodes
+}
+
 # Install Docker on RKE Nodes
-module "docker-rke-nodes" {
+module "docker_rke_nodes" {
   source  = "./modules/docker"
   count   = var.enable_rke_k8s_cluster == true ? 1 : 0
 
@@ -28,23 +36,14 @@ module "docker-rke-nodes" {
 }
 
 # Wait for the Docker services to start
-resource "null_resource" "wait_for_rke_dockers" {}
-
 resource "time_sleep" "wait_15_seconds_for_rke_dockers" {
-  depends_on        = [null_resource.wait_for_rke_dockers]
+  depends_on        = [module.docker_rke_nodes]
   count             = var.enable_rke_k8s_cluster == true ? 1 : 0
-  destroy_duration  = "15s"
-}
-
-module "rke-node-firewall" {
-  source  = "./modules/firewall"
-  count   = var.enable_rke_k8s_cluster == true ? 1 : 0
-
-  nodes   = var.rke_cluster_nodes
+  create_duration  = "15s"
 }
 
 # Deploy RKE Rancher Control Plane Cluster
-module "rke-cluster" {
+module "rke_cluster" {
   source      = "./modules/rke-cluster"
   count       = var.enable_rke_k8s_cluster == true ? 1 : 0
   providers   = {
@@ -69,8 +68,16 @@ module "rke-cluster" {
 # Custom K8s Cluster
 ##################################################
 
+# Handle Rancher & K8s related firewall configuration
+module "custom_node_firewall" {
+  source      = "./modules/firewall"
+  count       = var.enable_custom_k8s_cluster == true ? 1 : 0
+
+  nodes       = var.custom_cluster_nodes
+}
+
 # Install Docker on Custom Cluster Nodes
-module "docker-k8s-nodes" {
+module "docker_k8s_nodes" {
   source  = "./modules/docker"
   count   = var.enable_custom_k8s_cluster == true ? 1 : 0
 
@@ -80,26 +87,17 @@ module "docker-k8s-nodes" {
 }
 
 # Wait for the Docker services to start
-resource "null_resource" "wait_for_custom_dockers" {}
-
 resource "time_sleep" "wait_15_seconds_for_custom_dockers" {
-  depends_on = [null_resource.wait_for_custom_dockers]
+  depends_on = [module.docker_k8s_nodes]
   count   = var.enable_custom_k8s_cluster == true ? 1 : 0
-  destroy_duration = "15s"
-}
-
-module "custom-node-firewall" {
-  source      = "./modules/firewall"
-  count       = var.enable_custom_k8s_cluster == true ? 1 : 0
-
-  nodes       = var.custom_cluster_nodes
+  create_duration = "15s"
 }
 
 # TODO: Create the Custom K8s Cluster
 
 # Deploy infra applications on the Custom K8s Cluster
 # TODO: Add keepalived as infrastructure app
-module "custom-cluster" {
+module "custom_cluster" {
   source    = "./modules/custom-cluster"
   count     = var.enable_custom_k8s_cluster == true ? 1 : 0
   providers = {

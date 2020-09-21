@@ -15,23 +15,36 @@ resource "null_resource" "firewalld_installation" {
 }
 
 # Wait for the Firewall service to start
-resource "null_resource" "wait_for_firewalld" {}
-
 resource "time_sleep" "wait_10_seconds_for_firewalld" {
   depends_on = [null_resource.firewalld_installation]
-  destroy_duration = "10s"
+  create_duration = "10s"
 }
 
-# TODO: Only add nodes with specific role to each *_nodes list.
 locals {
-  etcd_nodes = var.nodes
-  control_nodes = var.nodes
-  worker_nodes = var.nodes
+  etcd_nodes = {
+    for node, obj in var.nodes : node => {
+        address = obj.address
+        role    = obj.role
+      } if contains(obj.role, "etcd")
+  }
+  control_nodes = {
+    for node, obj in var.nodes : node => {
+        address = obj.address
+        role    = obj.role
+      } if contains(obj.role, "controlplane")
+  }
+  worker_nodes = {
+    for node, obj in var.nodes : node => {
+        address = obj.address
+        role    = obj.role
+      } if contains(obj.role, "worker")
+  }
 }
 
 # FW rules according to https://rancher.com/docs/rancher/v2.x/en/installation/options/firewall/
 resource "null_resource" "firewalld_etcd_node_rules" {
-  for_each = local.control_nodes
+  depends_on = [time_sleep.wait_10_seconds_for_firewalld]
+  for_each = local.etcd_nodes
   connection {
     host        = each.value.address
     user        = var.remote_access_service_user
@@ -51,7 +64,8 @@ resource "null_resource" "firewalld_etcd_node_rules" {
 }
 
 resource "null_resource" "firewalld_control_node_rules" {
-  for_each = local.worker_nodes
+  depends_on = [time_sleep.wait_10_seconds_for_firewalld]
+  for_each = local.control_nodes
   connection {
     host        = each.value.address
     user        = var.remote_access_service_user
@@ -75,7 +89,8 @@ resource "null_resource" "firewalld_control_node_rules" {
 }
 
 resource "null_resource" "firewalld_worker_node_rules" {
-  for_each = local.etcd_nodes
+  depends_on = [time_sleep.wait_10_seconds_for_firewalld]
+  for_each = local.worker_nodes
   connection {
     host        = each.value.address
     user        = var.remote_access_service_user
@@ -97,13 +112,25 @@ resource "null_resource" "firewalld_worker_node_rules" {
   }
 }
 
-# TODO: Fix Firewall Reload
+# Wait for Firewall rules to be applied properly
+resource "time_sleep" "wait_5_seconds_for_firewalld_rules" {
+  depends_on = [
+    null_resource.firewalld_etcd_node_rules,
+    null_resource.firewalld_control_node_rules,
+    null_resource.firewalld_worker_node_rules
+  ]
+  create_duration = "5s"
+}
+
+# Reload the firewall configuration and restart the Docker daemon in order to reapply its chains
+# TODO: Resolve the Docker & Firewalld issue where the Docker chains always get deleted after firewalld is restarted.
 resource "null_resource" "firewalld_reload" {
+  depends_on = [time_sleep.wait_5_seconds_for_firewalld_rules]
   for_each = var.nodes
   triggers = {
-    etcd_nodes = null_resource.firewalld_etcd_node_rules[each.key].id
-    control_nodes = null_resource.firewalld_etcd_node_rules[each.key].id
-    worker_nodes = null_resource.firewalld_etcd_node_rules[each.key].id
+    etcd_nodes = lookup(local.etcd_nodes, each.key, null) != null ? null_resource.firewalld_etcd_node_rules[each.key].id : ""
+    control_nodes = lookup(local.control_nodes, each.key, null) != null ? null_resource.firewalld_control_node_rules[each.key].id : ""
+    worker_nodes = lookup(local.worker_nodes, each.key, null) != null ? null_resource.firewalld_worker_node_rules[each.key].id : ""
   }
   connection {
     host        = each.value.address
@@ -112,7 +139,8 @@ resource "null_resource" "firewalld_reload" {
   }
   provisioner "remote-exec" {
     inline = [
-      "sudo firewall-cmd --reload"
+      "sudo firewall-cmd --reload",
+      "sudo systemctl restart docker || true"
     ]
   }
 }
