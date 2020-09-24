@@ -2,15 +2,23 @@
 # Provider Definitions
 ##################################################
 provider "rke" {
-  alias     = "rke_config"
   log_file  = "rke_debug.log"
 }
 
+provider "helm" {
+  kubernetes {
+    config_path = "${path.root}/kube_config_cluster.yml"
+  }
+}
+
 provider "rancher2" {
-  alias       = "rancher2_config"
   api_url     = var.rancher2_api_url
   access_key  = var.rancher2_access_key
   secret_key  = var.rancher2_secret_key
+}
+
+provider "kubectl" {
+  config_path = "${path.root}/kube_config_cluster.yml"
 }
 
 ##################################################
@@ -46,9 +54,6 @@ resource "time_sleep" "wait_15_seconds_for_rke_dockers" {
 module "rke_cluster" {
   source      = "./modules/rke-cluster"
   count       = var.enable_rke_k8s_cluster == true ? 1 : 0
-  providers   = {
-    rke = rke.rke_config
-  }
 
   rke_cluster_node_config_is_from_cluster_yml = var.rke_cluster_node_config_is_from_cluster_yml
   rke_cluster_yml_file                        = var.rke_cluster_yml_file
@@ -57,12 +62,31 @@ module "rke_cluster" {
   rke_cluster_kubernetes_version              = var.rke_cluster_kubernetes_version
   rke_cluster_ingress_provider                = var.rke_cluster_ingress_provider
   rke_cluster_network_plugin                  = var.rke_cluster_network_plugin
-
 }
 
-# TODO: Install Rancher Helm Chart & dependencies
+# Wait for the RKE cluster to properly start
+resource "time_sleep" "wait_15_seconds_for_rke_cluster" {
+  depends_on        = [module.rke_cluster]
+  count             = var.enable_rke_k8s_cluster == true ? 1 : 0
+  create_duration  = "15s"
+}
 
-# TODO: Add keepalived as infrastructure app
+# Deploy Rancher Control Plane
+module "rancher" {
+  source      = "./modules/rancher"
+  count       = var.enable_rke_k8s_cluster == true ? 1 : 0
+
+  rancher_manifest_store_directory          = var.rancher_manifest_store_directory
+  rancher_cert_manager_version              = var.rancher_cert_manager_version
+  rancher_helm_chart_version                = var.rancher_helm_chart_version
+  rancher_helm_chart_type                   = var.rancher_helm_chart_type
+
+  rancher_helm_chart_value_hostname         = var.rancher_helm_chart_value_hostname
+  rancher_helm_chart_value_ingress          = var.rancher_helm_chart_value_ingress
+  rancher_helm_chart_value_letsencrypt_mail = var.rancher_helm_chart_value_letsencrypt_mail
+  rancher_helm_chart_value_letsencrypt_env  = var.rancher_helm_chart_value_letsencrypt_env
+  rancher_helm_chart_value_private_ca       = var.rancher_helm_chart_value_private_ca
+}
 
 ##################################################
 # Custom K8s Cluster
@@ -100,7 +124,4 @@ resource "time_sleep" "wait_15_seconds_for_custom_dockers" {
 module "custom_cluster" {
   source    = "./modules/custom-cluster"
   count     = var.enable_custom_k8s_cluster == true ? 1 : 0
-  providers = {
-    rancher2 = rancher2.rancher2_config
-  }
 }

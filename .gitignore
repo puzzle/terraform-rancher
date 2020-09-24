@@ -1,3 +1,5 @@
 terraform.tfvars
 cluster.yaml.tmpl
 .terraform
+values_yaml/*.yaml
+values_yaml/*.yml
